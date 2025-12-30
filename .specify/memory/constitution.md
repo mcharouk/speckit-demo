@@ -1,50 +1,138 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+SYNC IMPACT REPORT
+==================
+Version Change: [initial template] → 1.0.0
+Modified Principles: N/A (initial constitution)
+Added Sections:
+  - Core Principles: 7 principles established
+  - Technology Stack Constraints (fixed stack)
+  - Compliance & Auditability Requirements
+  - Governance rules
+Templates Requiring Updates:
+  ✅ plan-template.md - constitution check section compatible
+  ✅ spec-template.md - acceptance criteria align with explainability principle
+  ✅ tasks-template.md - test-driven approach consistent with principle III
+Follow-up TODOs: None
+==================
+-->
+
+# Credit Limit Decision Service Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Deterministic Decision Logic (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+**MUST**: Decision logic is a pure function with zero side effects. Same inputs MUST produce the same decision output every time (timestamp and decisionId may differ, but decision outcome, reason codes, and explanations MUST be identical).
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**MUST NOT**: Make AWS SDK calls (boto3) or any I/O operations inside the rule engine.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: Determinism enables testing, debugging, and regulatory audit. Non-deterministic underwriting decisions create legal and compliance risk.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Explainability & Auditability (NON-NEGOTIABLE)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**MUST**: Every credit limit decision returns:
+- Decision outcome (approved/declined/referred)
+- Reason codes (machine-readable identifiers)
+- Human-readable explanations for underwriters
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+**MUST**: All decisions stored in DynamoDB audit table with full request payload and decision trace.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**MUST NOT**: Store PII beyond identifiers (buyerId, policyId). No names, addresses, or financial details beyond aggregate risk indicators.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale**: Trade credit insurance is a regulated space. Decisions must be explainable to regulators, underwriters, and clients. Privacy regulations prohibit unnecessary PII storage.
+
+### III. Type Safety & Data Contracts
+
+**MUST**: Use Python type hints throughout all modules.
+
+**MUST**: Use dataclasses (or Pydantic if dependencies expanded) for all request/response models and domain entities.
+
+**MUST NOT**: Pass untyped dictionaries between functions or modules.
+
+**Rationale**: Type hints catch errors at development time, improve IDE support, enable better refactoring, and serve as inline documentation for credit risk analysts reviewing logic.
+
+### IV. Minimal Dependencies & Simplicity
+
+**MUST**: Keep dependencies minimal. Approved: stdlib, boto3 (AWS SDK), pytest (dev).
+
+**MUST NOT**: Add heavy frameworks (Django, Flask, FastAPI) or unnecessary libraries without explicit constitution amendment.
+
+**Rationale**: Lambda cold start performance, security surface reduction, and long-term maintainability for a small underwriting team.
+
+### V. Observability & Correlation
+
+**MUST**: Emit structured logs (JSON-compatible format) for all decision requests.
+
+**MUST**: Include `decisionId` in every log entry to enable correlation across Lambda invocations, DynamoDB writes, and downstream systems.
+
+**MUST**: Log decision inputs, outputs, and any rule branch taken (for audit trail).
+
+**Rationale**: When an underwriter questions a decision, engineering must trace the full decision path in CloudWatch. DecisionId is the correlation key.
+
+### VI. Error Handling & API Contracts
+
+**MUST**: API Gateway responses are JSON with `Content-Type: application/json`.
+
+**MUST**: Success responses follow schema: `{ "decisionId": "...", "decision": "...", "reasonCodes": [...], "explanation": "..." }`
+
+**MUST**: Error responses follow schema: `{ "errorCode": "...", "message": "..." }` with appropriate HTTP status (400 client error, 500 server error, 422 validation failure).
+
+**MUST NOT**: Return HTML error pages or stack traces to clients.
+
+**Rationale**: Downstream systems (underwriter UI, batch processors) depend on stable JSON contracts. Error codes enable systematic error handling.
+
+### VII. Code Quality & Maintainability
+
+**MUST**: Format code with `black` (or black-compatible formatter).
+
+**MUST**: Organize code into clear module boundaries: `decision_engine/`, `models/`, `api_gateway_handler/`, `audit/`.
+
+**MUST**: Use readable, domain-specific names: prefer `CreditLimitRequest` over `CLR`, `assess_buyer_risk()` over `abr()`.
+
+**Rationale**: Credit risk logic is complex enough. Code must be readable by underwriters (who may review business rules) and junior engineers (small team, knowledge transfer critical).
+
+## Technology Stack Constraints
+
+**FIXED STACK** (changes require constitution amendment):
+
+- **Runtime**: AWS Lambda, Python 3.13
+- **API Gateway**: HTTP API with Lambda proxy integration
+- **Persistence**: DynamoDB (audit records only; decision logic remains stateless)
+- **Infrastructure as Code**: AWS SAM (`template.yaml`)
+- **Testing**: pytest (unit + integration tests)
+- **Deployment**: AWS SAM CLI (`sam build`, `sam deploy`)
+
+**Rationale**: Stack selected for regulatory compliance (AWS GovCloud compatible), serverless cost model (sporadic usage), and team expertise (Python).
+
+## Compliance & Auditability Requirements
+
+**MUST**: Audit table schema includes:
+- decisionId (partition key)
+- timestamp (ISO 8601 UTC)
+- buyerId, policyId (identifiers only)
+- requestPayload (full input for replay)
+- decisionOutcome, reasonCodes, explanation
+- lambdaRequestId (for CloudWatch correlation)
+
+**MUST**: Implement DynamoDB TTL for audit records (retention TBD, but support TTL attribute).
+
+**MUST NOT**: Log or store sensitive PII (customer names, contact details, financial statements) in audit table.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+**Authority**: This constitution supersedes all coding preferences, team conventions, and prior practices. Non-negotiable principles (marked NON-NEGOTIABLE above) cannot be bypassed.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Amendment Process**:
+1. Proposal documented with business justification
+2. Team review (engineering + risk management stakeholders)
+3. Version bump per semantic versioning: MAJOR (principle removal/breaking change), MINOR (new principle added), PATCH (clarification/wording fix)
+4. Migration plan for affected code (if applicable)
+
+**Compliance Verification**:
+- All PRs must pass constitution compliance check
+- Tests must validate determinism (same input → same output)
+- Code reviews verify type hints, pure function boundaries, structured logging
+
+**Versioning**: Use semantic versioning for constitution itself. Breaking changes to governance require MAJOR version bump.
+
+**Version**: 1.0.0 | **Ratified**: 2025-12-30 | **Last Amended**: 2025-12-30
