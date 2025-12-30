@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: Credit Limit Decision Service API
+  version: 1.0.0
+  description: |
+    Deterministic credit limit decision service for trade credit insurance underwriters.
+    Provides instant APPROVE/REFER/DECLINE decisions with full explainability and audit trail.
+  contact:
+    name: Credit Risk Team
+
+servers:
+  - url: https://api.example.com
+    description: Production API Gateway
+
+paths:
+  /credit-decisions:
+    post:
+      summary: Request credit limit decision
+      description: |
+        Submit a credit limit request for automated decision.
+        Returns APPROVE, REFER, or DECLINE with reason codes and explanations.
+        All requests are audited to DynamoDB for regulatory compliance.
+      operationId: createCreditDecision
+      tags:
+        - Credit Decisions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditDecisionRequest'
+            examples:
+              gradeA_approve:
+                summary: Grade A buyer - approval
+                value:
+                  buyerId: "BYR-12345"
+                  policyId: "POL-67890"
+                  requestedLimit: 750000
+                  currency: "USD"
+                  requestId: "REQ-2025-001"
+              gradeB_capped:
+                summary: Grade B buyer - approval with capping
+                value:
+                  buyerId: "BYR-54321"
+                  policyId: "POL-11111"
+                  requestedLimit: 800000
+                  currency: "EUR"
+              gradeC_refer:
+                summary: Grade C buyer - referral
+                value:
+                  buyerId: "BYR-99999"
+                  policyId: "POL-22222"
+                  requestedLimit: 300000
+                  currency: "GBP"
+      responses:
+        '200':
+          description: Decision successfully evaluated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditDecisionResponse'
+              examples:
+                approve_no_cap:
+                  summary: Approved without capping
+                  value:
+                    decisionId: "550e8400-e29b-41d4-a716-446655440000"
+                    decision: "APPROVE"
+                    approvedLimit: 750000
+                    currency: "USD"
+                    reasonCodes: []
+                    explanations: []
+                    timestamp: "2025-12-30T10:30:00.000Z"
+                approve_with_cap:
+                  summary: Approved with grade cap
+                  value:
+                    decisionId: "660e8400-e29b-41d4-a716-446655440001"
+                    decision: "APPROVE"
+                    approvedLimit: 500000
+                    currency: "EUR"
+                    reasonCodes: ["LIMIT_CAPPED_BY_GRADE"]
+                    explanations: ["Requested limit exceeds maximum allowed for risk grade B (500,000)"]
+                    timestamp: "2025-12-30T10:31:00.000Z"
+                refer_grade_c:
+                  summary: Referral for medium risk
+                  value:
+                    decisionId: "770e8400-e29b-41d4-a716-446655440002"
+                    decision: "REFER"
+                    approvedLimit: 0
+                    currency: "GBP"
+                    reasonCodes: ["RISK_GRADE_MEDIUM"]
+                    explanations: ["Buyer risk grade is C (medium risk); manual underwriter review required"]
+                    timestamp: "2025-12-30T10:32:00.000Z"
+                decline_high_risk:
+                  summary: Declined for high risk
+                  value:
+                    decisionId: "aa0e8400-e29b-41d4-a716-446655440005"
+                    decision: "DECLINE"
+                    approvedLimit: 0
+                    currency: "AUD"
+                    reasonCodes: ["RISK_GRADE_HIGH"]
+                    explanations: ["Buyer risk grade is D or E (high risk); credit cannot be approved"]
+                    timestamp: "2025-12-30T10:35:00.000Z"
+        '400':
+          description: Validation error in request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_field:
+                  summary: Missing required field
+                  value:
+                    errorCode: "MISSING_REQUIRED_FIELD"
+                    message: "buyerId is required"
+                invalid_limit:
+                  summary: Invalid requested limit
+                  value:
+                    errorCode: "INVALID_REQUEST"
+                    message: "requestedLimit must be a whole number"
+                negative_limit:
+                  summary: Negative requested limit
+                  value:
+                    errorCode: "INVALID_REQUEST"
+                    message: "requestedLimit must be greater than 0"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                internal_error:
+                  summary: Unexpected error
+                  value:
+                    errorCode: "INTERNAL_ERROR"
+                    message: "An unexpected error occurred while processing your request"
+
+components:
+  schemas:
+    CreditDecisionRequest:
+      type: object
+      required:
+        - buyerId
+        - policyId
+        - requestedLimit
+        - currency
+      properties:
+        buyerId:
+          type: string
+          description: Unique identifier for the buyer entity
+          example: "BYR-12345"
+          minLength: 1
+        policyId:
+          type: string
+          description: Unique identifier for the insurance policy
+          example: "POL-67890"
+          minLength: 1
+        requestedLimit:
+          type: integer
+          description: Requested credit limit in whole currency units (no decimals)
+          example: 750000
+          minimum: 1
+        currency:
+          type: string
+          description: ISO 4217 currency code (3 uppercase letters, basic format validation only)
+          example: "USD"
+          pattern: '^[A-Z]{3}$'
+        requestId:
+          type: string
+          description: Optional idempotency key for request tracking (stored but not enforced in MVP)
+          example: "REQ-2025-001"
+          nullable: true
+
+    CreditDecisionResponse:
+      type: object
+      required:
+        - decisionId
+        - decision
+        - approvedLimit
+        - currency
+        - reasonCodes
+        - explanations
+        - timestamp
+      properties:
+        decisionId:
+          type: string
+          format: uuid
+          description: Unique identifier for this decision (UUID v4)
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        decision:
+          type: string
+          enum: [APPROVE, REFER, DECLINE]
+          description: Decision outcome
+          example: "APPROVE"
+        approvedLimit:
+          type: integer
+          description: Approved credit limit in whole currency units (0 for REFER/DECLINE)
+          example: 750000
+          minimum: 0
+        currency:
+          type: string
+          description: Currency code echoed from request
+          example: "USD"
+          pattern: '^[A-Z]{3}$'
+        reasonCodes:
+          type: array
+          description: Machine-readable decision rationale (may be empty for straightforward approvals)
+          items:
+            type: string
+            enum:
+              - RISK_GRADE_HIGH
+              - RISK_GRADE_MEDIUM
+              - PAST_DUE_OVER_60
+              - LIMIT_CAPPED_BY_GRADE
+              - RISK_DATA_MISSING
+              - PAST_DUE_DATA_MISSING
+          example: ["LIMIT_CAPPED_BY_GRADE"]
+        explanations:
+          type: array
+          description: Human-readable explanations (1:1 mapping with reasonCodes)
+          items:
+            type: string
+          example: ["Requested limit exceeds maximum allowed for risk grade B (500,000)"]
+        timestamp:
+          type: string
+          format: date-time
+          description: When decision was made (ISO 8601 UTC)
+          example: "2025-12-30T10:30:00.000Z"
+
+    ErrorResponse:
+      type: object
+      required:
+        - errorCode
+        - message
+      properties:
+        errorCode:
+          type: string
+          description: Machine-readable error code
+          enum:
+            - MISSING_REQUIRED_FIELD
+            - INVALID_REQUEST
+            - INTERNAL_ERROR
+          example: "MISSING_REQUIRED_FIELD"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "buyerId is required"
+
+  securitySchemes:
+    ApiGatewayAuthorizer:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        API Gateway authorizer provides principalId in requestContext.
+        If absent, audit record uses "anonymous" for principalId.
+
+security:
+  - ApiGatewayAuthorizer: []
+
+tags:
+  - name: Credit Decisions
+    description: Credit limit decision operations

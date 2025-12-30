@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Credit Limit Decision Service - Trade Credit Insurance MVP
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: python3.13
+
+Resources:
+  # Lambda Function
+  CreditDecisionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src.credit_decision.handler.lambda_handler
+      Description: Credit limit decision service for trade credit insurance underwriters
+      Environment:
+        Variables:
+          AUDIT_TABLE_NAME: !Ref CreditDecisionAuditTable
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref CreditDecisionAuditTable
+      Events:
+        CreditDecisionApi:
+          Type: HttpApi
+          Properties:
+            Path: /credit-decisions
+            Method: POST
+
+  # DynamoDB Audit Table
+  CreditDecisionAuditTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CreditDecisionAudit
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+
+Outputs:
+  CreditDecisionApi:
+    Description: "API Gateway endpoint URL for Credit Decision function"
+    Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/credit-decisions"
+  CreditDecisionFunctionArn:
+    Description: "Credit Decision Lambda Function ARN"
+    Value: !GetAtt CreditDecisionFunction.Arn
+  CreditDecisionAuditTableName:
+    Description: "DynamoDB Audit Table Name"
+    Value: !Ref CreditDecisionAuditTable
