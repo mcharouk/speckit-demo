@@ -38,6 +38,7 @@ Output the constitution as a concise, structured document.
 * creates a specs/001-credit-limit-decision folder
 * creates a requirements.md that indicates how the specification complies with the constitution principles
 * creates a spec.md where the spec are written down
+* note that there can be [NEEDS CLARIFICATION] parts embedded in the spec.md that refers to everything that was unclear.
 
 ```
 /speckit.specify
@@ -119,6 +120,11 @@ NON-FUNCTIONAL REQUIREMENTS
 - SAM template to deploy Lambda + DynamoDB + minimal IAM permissions
 
 Include: glossary, request/response examples, and acceptance criteria (Given/When/Then style).
+
+# Clarify
+
+* identifies unclear parts in the spec.md
+* Optional to run
 
 # Speckit Plan
 
@@ -219,7 +225,19 @@ tasks.md
 
 * try to fix the issue in the most top level file or it will create inconsistencies
 
+# Analyze
+
+* Cross-artifact consistency & coverage analysis
+* basically it checks that the tasks don't violate any rule that was given before. It's a quality check gate.
+* It can make recommendations for improvements
+* If you want to accept recommendations, tell him to integrate them in the spec, plan and tasks to use a recursive loop.
+* Optional to run
+
+
 # Spec-kit implement
+
+* if something is not right in the result of implement step, you can iterate to ask him to refine
+* at the very least be sure, once it's done, ask him to reintegrate all the learning and experience pieces to the spec.md
 
 ```
 /speckit.implement

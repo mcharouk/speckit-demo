@@ -1,6 +1,36 @@
 # How to integrate spec-kit into an existing project ?
 
-Create a stable home for spec-kit artifacts, so they live with the code and evolve via PRs
+## Constitution
+
+* This is the always true part
+* This is where you put things like:
+  * “Don’t break existing behavior” / backwards compatibility expectations
+  * security constraints (no logging secrets, approved crypto libs only, etc.)
+  * testing requirements (unit tests required; integration tests for critical paths)
+  * coding standards (formatting, lint rules, typing)
+  * repo conventions (folder layout, naming, branching strategy)
+  * “No new dependencies without approval”
+  * “Prefer minimal diffs; refactor only when necessary to implement the task”
+  * Create a stable home for spec-kit artifacts, so they live with the code and evolve via PRs
+
+* You can also define some .md files like
+  * architecture.md
+  * stack.md
+  * testing.md
+* refer to it in the constitution in each feature like that
+
+```
+All specs/plans/tasks/implementation MUST conform to docs/architecture.md and docs/stack.md
+```
+
+or 
+
+```
+Plans must start by restating relevant constraints from docs/architecture.md (only the relevant ones), not redefining the architecture
+```
+
+
+## Project-level specifications
 
 * here the _project folder contains all the constraints
   * note that constituion.md provides high level principles that governs the project. It should be stable
@@ -107,3 +137,14 @@ not suggestions.
 ```
 
 You could as well add it in plan.md as a hard guardrail
+
+# Spec kit recommendations
+
+* [Reference](https://www.youtube.com/watch?v=SGHIQTsPzuY)
+* you may try difference models (GPT, Claude, Gemini)
+* define the constitution
+  * in the prompt you can give rules you may want to have in the constitution
+  * you might give it the nature of the project (API REST, event driven)
+  * you might give him the main technos (for example, i'm building on AWS but use Terraform for CI/CD). These are constraints not specific to a project but scope multiple projects
+  * you might give him all the things you don't want to change, you want to keep it exactly as it is in terms of code organization, but be careful in the prompt to not be to rigid. He should able to modify exsiting files and add new files. It's just the structure principle that is fixed.
+  * Don't be too rigid because constitution is the non negotiable rules
