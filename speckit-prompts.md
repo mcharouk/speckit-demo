@@ -1,6 +1,6 @@
 # Overview
 
-![Github Spec-kit Development Flow](/development-flow.png "Github Spec-kit Development Flow").
+![Spec Driven Development Flow](/development-flow.png "Spec Driven Development Flow").
 
 
 # Constitution
