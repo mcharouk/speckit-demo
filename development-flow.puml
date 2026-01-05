@@ -1,5 +1,24 @@
 @startuml
-title Spec-Driven Development Flow (GitHub Spec Kit)
+title Spec-Driven Development Flow (Mandatory vs Optional)
+
+' ===============================
+' Mandatory steps (default style)
+' ===============================
+skinparam activity {
+  BackgroundColor White
+  BorderColor Black
+  FontColor Black
+}
+
+' ===============================
+' Optional steps (visual distinction)
+' ===============================
+skinparam activity<<optional>> {
+  BackgroundColor #F5F5F5
+  BorderColor #888888
+  BorderStyle dashed
+  FontColor #444444
+}
 
 start
 
@@ -9,9 +28,10 @@ Command:
 /speckit.constitution
 
 Purpose:
-Establish non-negotiable rules:
-quality, testing, security,
-performance, conventions.
+✔ quality standards
+✔ testing expectations
+✔ security & performance rules
+✔ conventions & review norms
 
 Artifact:
 constitution.md
@@ -23,24 +43,26 @@ Command:
 /speckit.specify
 
 Purpose:
-Capture WHAT and WHY:
-scope, requirements,
-success criteria, constraints.
+✔ scope & objectives
+✔ functional requirements
+✔ success criteria
+✔ constraints & assumptions
 
 Artifact:
 spec.md
 end note
 
-:Clarify & De-Risk Requirements;
+:Clarify & De-Risk Requirements; <<optional>>
 note right
 Command:
 /speckit.clarify
 
 Purpose:
-Resolve ambiguity early:
-edge cases, NFRs,
-data & API contracts,
-acceptance tests.
+✔ remove ambiguity
+✔ define edge cases
+✔ clarify NFRs
+✔ specify data & API contracts
+✔ align on acceptance tests
 
 Artifact:
 Updated spec.md
@@ -52,9 +74,10 @@ Command:
 /speckit.plan
 
 Purpose:
-Define HOW:
-architecture, components,
-tradeoffs, risks, rollout.
+✔ architecture & components
+✔ data flows & interfaces
+✔ tradeoffs & decisions
+✔ risks & rollout approach
 
 Artifact:
 plan.md
@@ -66,64 +89,80 @@ Command:
 /speckit.tasks
 
 Purpose:
-Create ordered tasks:
-dependencies, deliverables,
-validation steps.
+✔ ordered implementation steps
+✔ dependencies & sequencing
+✔ ownership & deliverables
+✔ verification steps
 
 Artifact:
 tasks.md
 end note
 
-:Consistency & Governance Analysis;
+:Consistency & Governance Analysis; <<optional>>
 note right
 Command:
 /speckit.analyze
 
 Purpose:
-Verify alignment:
-- spec vs plan vs tasks
-- compliance with constitution
-- missing tests or constraints
+✔ spec / plan / tasks alignment
+✔ constitution compliance
+✔ missing tests or constraints
+✔ architectural gaps
 
 Outcome:
-Findings & recommendations
+✔ issues identified
+✔ or ready to proceed
 end note
 
-:Readiness & Quality Checklist;
-note right
-Command:
-/speckit.checklist
+if (Issues found?) then (Yes)
+  :Refine Spec / Plan / Tasks;
+  note right
+  Purpose:
+  ✔ address analysis findings
+  ✔ re-clarify where needed
+  ✔ update affected artifacts
+  end note
 
-Purpose:
-Pre-build quality gate:
-✔ acceptance criteria
-✔ test strategy
-✔ security & privacy
-✔ observability
-✔ rollback plan
-end note
+  --> :Consistency & Governance Analysis;
+else (No)
+  :Readiness & Quality Checklist; <<optional>>
+  note right
+  Command:
+  /speckit.checklist
+
+  Pre-build gate:
+  ✔ acceptance criteria complete
+  ✔ test strategy defined
+  ✔ security & privacy reviewed
+  ✔ observability/logging planned
+  ✔ rollback & failure modes considered
+  end note
+endif
 
 if (Ready to build?) then (Yes)
   :Build & Test Solution;
   note right
-Command:
-/speckit.implement
+  Command:
+  /speckit.implement
 
-Purpose:
-Execute tasks,
-write code & tests,
-adhere to constitution.
-end note
+  Purpose:
+  ✔ execute tasks
+  ✔ write code & tests
+  ✔ follow constitution rules
+  ✔ keep docs aligned
+  end note
 
   :Validate & Deliver;
   stop
 else (No)
   :Refine Spec / Plan / Tasks;
   note right
-Address gaps from analyze
-or checklist, then re-run
-analysis & checklist.
-end note
+  Purpose:
+  ✔ close checklist gaps
+  ✔ update tasks or plan
+  ✔ re-run gates as needed
+  end note
+
   --> :Consistency & Governance Analysis;
 endif
 
