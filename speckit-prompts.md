@@ -1,4 +1,41 @@
-# Overview
+# Spec driven development vs vibe coding
+
+## Why *Vibe Coding* Breaks at Scale
+
+✔ **Implicit instructions**
+
+* Critical requirements live in prompts and conversations, not durable artifacts
+* Hard to review, govern, or reuse decisions
+
+✔ **Uncontrolled changes**
+
+* Incomplete prompts lead to unintended features or wide code changes
+* High risk in large or legacy codebases
+
+✔ **Late risk discovery**
+
+* Problems appear during implementation, when fixes are costly
+
+## Why *Spec-Driven Development* Scales
+
+✔ **Everything is written down**
+
+* Requirements, constraints, and decisions are explicit documents
+* Instructions are reviewable, auditable, and reusable
+
+✔ **Stronger governance & transparency**
+
+* Clear guardrails (constitution) and pre-code gates
+* Leadership can see intent, risk, and readiness early
+
+✔ **Controlled, predictable change**
+
+* Specs, plans, and tasks bound scope and protect legacy systems
+* Issues are caught before code is written
+
+---
+
+# Spec Driven development Flow
 
 ![Spec Driven Development Flow](/development-flow.png "Spec Driven Development Flow").
 
