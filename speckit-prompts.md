@@ -1,6 +1,5 @@
 # Overview
 
-![Spec Driven Development Flow](/development-flow.png "Spec Driven Development Flow").
 
 
 # Constitution
