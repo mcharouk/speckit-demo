@@ -1,4 +1,41 @@
+# Overview
+
+![Github Spec-kit Development Flow](/development-flow.png "Github Spec-kit Development Flow").
+
+
 # Constitution
+
+## Explanations
+
+* This is the always true part
+* This is where you put things like:
+  * “Don’t break existing behavior” / backwards compatibility expectations
+  * security constraints (no logging secrets, approved crypto libs only, etc.)
+  * testing requirements (unit tests required; integration tests for critical paths)
+  * coding standards (formatting, lint rules, typing)
+  * repo conventions (folder layout, naming, branching strategy)
+  * “No new dependencies without approval”
+  * “Prefer minimal diffs; refactor only when necessary to implement the task”
+  * Create a stable home for spec-kit artifacts, so they live with the code and evolve via PRs
+
+* You can also define some .md files like
+  * architecture.md
+  * stack.md
+  * testing.md
+* refer to it in the constitution in each feature like that
+
+
+```
+All specs/plans/tasks/implementation MUST conform to docs/architecture.md and docs/stack.md
+```
+
+or 
+
+```
+Plans must start by restating relevant constraints from docs/architecture.md (only the relevant ones), not redefining the architecture
+```
+
+## Prompt
 
 ```
 /speckit.constitution
@@ -36,9 +73,10 @@ Output the constitution as a concise, structured document.
 
 * if folder is connected to git, it will create a new branch
 * creates a specs/001-credit-limit-decision folder
-* creates a requirements.md that indicates how the specification complies with the constitution principles
 * creates a spec.md where the spec are written down
-* note that there can be [NEEDS CLARIFICATION] parts embedded in the spec.md that refers to everything that was unclear.
+* creates a requirements.md that indicates 
+  * if there are something missing in the spec.md or unclear
+    * some tags with [NEEDS CLARIFICATION] could be added to the spec.md  
 
 ```
 /speckit.specify

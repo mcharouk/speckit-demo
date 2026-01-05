@@ -1,0 +1,130 @@
+@startuml
+title Spec-Driven Development Flow (GitHub Spec Kit)
+
+start
+
+:Define Engineering Guardrails;
+note right
+Command:
+/speckit.constitution
+
+Purpose:
+Establish non-negotiable rules:
+quality, testing, security,
+performance, conventions.
+
+Artifact:
+constitution.md
+end note
+
+:Define Requirements & Intent;
+note right
+Command:
+/speckit.specify
+
+Purpose:
+Capture WHAT and WHY:
+scope, requirements,
+success criteria, constraints.
+
+Artifact:
+spec.md
+end note
+
+:Clarify & De-Risk Requirements;
+note right
+Command:
+/speckit.clarify
+
+Purpose:
+Resolve ambiguity early:
+edge cases, NFRs,
+data & API contracts,
+acceptance tests.
+
+Artifact:
+Updated spec.md
+end note
+
+:Design Technical Approach;
+note right
+Command:
+/speckit.plan
+
+Purpose:
+Define HOW:
+architecture, components,
+tradeoffs, risks, rollout.
+
+Artifact:
+plan.md
+end note
+
+:Break Down Executable Work;
+note right
+Command:
+/speckit.tasks
+
+Purpose:
+Create ordered tasks:
+dependencies, deliverables,
+validation steps.
+
+Artifact:
+tasks.md
+end note
+
+:Consistency & Governance Analysis;
+note right
+Command:
+/speckit.analyze
+
+Purpose:
+Verify alignment:
+- spec vs plan vs tasks
+- compliance with constitution
+- missing tests or constraints
+
+Outcome:
+Findings & recommendations
+end note
+
+:Readiness & Quality Checklist;
+note right
+Command:
+/speckit.checklist
+
+Purpose:
+Pre-build quality gate:
+✔ acceptance criteria
+✔ test strategy
+✔ security & privacy
+✔ observability
+✔ rollback plan
+end note
+
+if (Ready to build?) then (Yes)
+  :Build & Test Solution;
+  note right
+Command:
+/speckit.implement
+
+Purpose:
+Execute tasks,
+write code & tests,
+adhere to constitution.
+end note
+
+  :Validate & Deliver;
+  stop
+else (No)
+  :Refine Spec / Plan / Tasks;
+  note right
+Address gaps from analyze
+or checklist, then re-run
+analysis & checklist.
+end note
+  --> :Consistency & Governance Analysis;
+endif
+
+@enduml
