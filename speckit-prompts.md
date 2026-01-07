@@ -1,3 +1,12 @@
+# Spec driven development (short) history
+
+* It's in the same spirit than TDD, BDD, meaning writing a form of spec before writing code.
+* Vibe coders 
+  * realize that the hardest thing when working with an AI is to specify the intent.
+  * starts to put the specification in markdown format as a best practice, but no formal process.
+* AWS Kiro IDE first one to develop a standardized toolkit to write those specifications (Preview in July 2025 / GA in Nov 2025)
+* Github Speckit first tag Aug 22nd 2025, last release 0.0.90/on Dec 4th 2025
+
 # Spec driven development vs vibe coding
 
 ## Why *Vibe Coding* Breaks at Scale
